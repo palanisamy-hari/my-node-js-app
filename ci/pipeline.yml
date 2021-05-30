@@ -1,0 +1,64 @@
+resources:
+  - name: git-repository
+    type: git
+    icon: git
+    check_every: 2m
+    source:
+      uri: "https://github.com/palanisamy-hari/my-node-js-app.git"
+      branch: "main"
+     
+
+jobs:
+- name: deploy-app
+  serial: true
+  plan:
+  - get: git-repository
+    trigger: true
+  - task: deploy-app-heroku
+    params:
+      HEROKU_EMAIL: ((email))
+      HEROKU_TOKEN: ((token))
+    config:
+      platform: linux
+
+      image_resource:
+        type: docker-image
+        source: { repository: concourse/bosh-cli }
+
+      inputs:
+        - name: git-repository
+
+      run:
+        path: sh
+        dir: git-repository
+        args:
+          - -exc
+          - |
+            cat > /root/.netrc <<EOF
+            machine git.heroku.com
+              login $HEROKU_EMAIL
+              password $HEROKU_TOKEN
+            EOF
+            git push  https://git.heroku.com/stark-castle-29113.git main:refs/heads/main      
+
+- name: ui-test
+  public: true
+  plan:
+    - get: source
+      trigger: true
+      passed: [deploy-app]
+    - task: run-tests
+      config:
+        image_resource:
+          type: registry-image
+          source: { repository: ruby, tag: 2.5.8 }
+        platform: linux
+        inputs:
+          - name: source
+        run:
+          path: /bin/bash
+          args:
+            - -c
+            - |  
+              bundle install
+              bundle exec ruby smoke-test.rb
