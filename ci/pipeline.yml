@@ -9,11 +9,43 @@ resources:
      
 
 jobs:
+- name: sonar-qualitygate
+  serial: true
+  plan:
+  - in_parallel:
+    - get: source-code
+      trigger: true
+  - task: check-sonarqube-quality-gate
+    params:
+      SONAR_HOST: ((sonar-host))
+      SONAR_TOKEN: ((sonar-token))
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: sonarsource/sonar-scanner-cli
+          tag: 4
+      inputs:
+      - name: source-code
+      run:
+        path: sh
+        dir: source-code
+        args:
+        - -ec
+        - |
+          sonar-scanner \
+            -Dsonar.projectKey=my-node-js-app \
+            -Dsonar.sources=. \
+            -Dsonar.host.url=$SONAR_HOST \
+            -Dsonar.login=$SONAR_TOKEN
+
 - name: deploy-app
   serial: true
   plan:
   - get: source-code
     trigger: true
+    passed: [sonar-qualitygate]
   - task: deploy-app-heroku
     params:
       HEROKU_EMAIL: ((heroku-email))
@@ -41,42 +73,13 @@ jobs:
             EOF
             git push  https://git.heroku.com/stark-castle-29113.git main:refs/heads/main      
 
-- name: sonar-qualitygate
-  plan:
-  - in_parallel:
-    - get: source-code
-      trigger: true
-      passed: [deploy-app]
-  - task: check-sonarqube-quality-gate
-    params:
-      SONAR_HOST: ((sonar-host))
-      SONAR_TOKEN: ((sonar-token))
-    config:
-      platform: linux
-      image_resource:
-        type: docker-image
-        source:
-          repository: sonarsource/sonar-scanner-cli
-          tag: 4
-      inputs:
-      - name: source-code
-      run:
-        path: sh
-        dir: source-code
-        args:
-        - -ec
-        - |
-          sonar-scanner \
-            -Dsonar.projectKey=my-node-js-app \
-            -Dsonar.sources=. \
-            -Dsonar.host.url=$SONAR_HOST \
-            -Dsonar.login=$SONAR_TOKEN
 - name: ui-test
+  serial: true
   public: true
   plan:
     - get: source-code
       trigger: true
-      passed: [sonar-qualitygate]
+      passed: [deploy-app]
     - task: run-tests
       params:
         LAMBDA_USER: ((lambda-email))
