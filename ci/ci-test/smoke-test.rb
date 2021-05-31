@@ -19,7 +19,7 @@ prefs = {
 
 begin
     lt_user= ENV['LAMBDA_USER']
-    lt_appkey= 'vX3mBD7h5qSglcVssu5qaLBeOVcHJBbofXMWLMCbo6LRMcoRBO'
+    lt_appkey= ENV['LAMBDA_TOKEN']
     browser = Watir::Browser.new :firefox, url: "https://"+lt_user+":"+lt_appkey+"@hub.lambdatest.com/wd/hub", options: {prefs: prefs, options: {'useAutomationExtension' => false}}
     browser.window.maximize
     
