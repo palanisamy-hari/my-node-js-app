@@ -18,7 +18,9 @@ prefs = {
 }
 
 begin
-    browser = Watir::Browser.new :firefox, url: "http://192.168.175.133:4444/", options: {prefs: prefs, options: {'useAutomationExtension' => false}}
+    lt_user= ENV['LAMBDA_USER']
+    lt_appkey= 'vX3mBD7h5qSglcVssu5qaLBeOVcHJBbofXMWLMCbo6LRMcoRBO'
+    browser = Watir::Browser.new :firefox, url: "https://"+lt_user+":"+lt_appkey+"@hub.lambdatest.com/wd/hub", options: {prefs: prefs, options: {'useAutomationExtension' => false}}
     browser.window.maximize
     
     
