@@ -1,5 +1,5 @@
 resources:
-  - name: git-repository
+  - name: source-code
     type: git
     icon: git
     check_every: 2m
@@ -12,7 +12,7 @@ jobs:
 - name: deploy-app
   serial: true
   plan:
-  - get: git-repository
+  - get: source-code
     trigger: true
   - task: deploy-app-heroku
     params:
@@ -26,11 +26,11 @@ jobs:
         source: { repository: concourse/bosh-cli }
 
       inputs:
-        - name: git-repository
+        - name: source-code
 
       run:
         path: sh
-        dir: git-repository
+        dir: source-code
         args:
           - -exc
           - |
@@ -44,7 +44,7 @@ jobs:
 - name: ui-test
   public: true
   plan:
-    - get: source
+    - get: source-code
       trigger: true
       passed: [deploy-app]
     - task: run-tests
@@ -54,11 +54,12 @@ jobs:
           source: { repository: ruby, tag: 2.5.8 }
         platform: linux
         inputs:
-          - name: source
+          - name: source-code
         run:
           path: /bin/bash
           args:
             - -c
-            - |  
+            - |
+              cd "source-code/ci/ci-test"
               bundle install
               bundle exec ruby smoke-test.rb

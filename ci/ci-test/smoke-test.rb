@@ -18,14 +18,14 @@ prefs = {
 }
 
 begin
-    browser = Watir::Browser.new :firefox, url: "http://localhost:4444/", options: {prefs: prefs, options: {'useAutomationExtension' => false}}
+    browser = Watir::Browser.new :firefox, url: "http://192.168.175.133:4444/", options: {prefs: prefs, options: {'useAutomationExtension' => false}}
     browser.window.maximize
     
     
     # launch and run test
     browser.goto 'https://stark-castle-29113.herokuapp.com/' 
     sleep 5
-    expect(browser.body.text).to eq('Hello World! - Deployed!')
+    expect(browser.body.text).to eq('Hello World! - Deployed')
 rescue RSpec::Expectations::ExpectationNotMetError => e
     puts "Test failed"
     puts "#{e.message}"
