@@ -82,8 +82,7 @@ jobs:
       passed: [deploy-app]
     - task: run-tests
       params:
-        LAMBDA_USER: ((lambda-email))
-        LAMBDA_TOKEN: ((lambda-token))
+        SELENIUM-GRID-HOST: ((selenium-grid-host))
       config:
         image_resource:
           type: registry-image

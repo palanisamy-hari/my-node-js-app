@@ -1,1 +1,4 @@
+.idea/
 ci/credentials.yml
+ci/ci-test/Gemfile.lock
+node_modules
