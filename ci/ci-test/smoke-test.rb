@@ -26,7 +26,7 @@ begin
   browser.goto 'https://stark-castle-29113.herokuapp.com/'
   sleep 5
   expect(browser.body.text).to eq('Hello World! - Deployed')
-  puts "test completed"
+  puts "test completed - passed"
 rescue RSpec::Expectations::ExpectationNotMetError => e
   puts "Test failed"
   puts "#{e.message}"
