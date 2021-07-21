@@ -1,0 +1,34 @@
+resources:
+  - name: source-code
+    type: git
+    icon: git
+    check_every: 2m
+    source:
+      uri: "https://github.com/palanisamy-hari/my-node-js-app.git"
+      branch: "main"
+
+
+jobs:
+  - name: helm-deploy
+    serial: true
+    plan:
+      - in_parallel:
+          - get: source-code
+            trigger: true
+      - task: helm-upgrade
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: alpine/helm
+              tag: 3.1.1
+          inputs:
+            - name: source-code
+          run:
+            path: sh
+            dir: source-code
+            args:
+              - -ec
+              - |
+                helm upgrade nodejs nodejs-chart
